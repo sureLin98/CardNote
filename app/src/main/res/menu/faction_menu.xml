@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/all_card"
+        android:icon="@mipmap/search"
+        android:title="全部卡片"/>
+
+    <item
+        android:id="@+id/faction_2"
+        android:icon="@mipmap/ic_launcher_round"
+        android:title="功能2"/>
+
+    <item
+        android:id="@+id/faction_3"
+        android:icon="@mipmap/ic_launcher_round"
+        android:title="功能3"/>
+
+    <item
+        android:id="@+id/faction_4"
+        android:title="功能4"
+        android:icon="@mipmap/ic_launcher_round"/>
+</menu>
