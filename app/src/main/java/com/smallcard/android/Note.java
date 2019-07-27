@@ -1,6 +1,10 @@
 package com.smallcard.android;
 
-public class Card {
+import org.litepal.crud.DataSupport;
+
+public class Note extends DataSupport {
+
+    int id;
 
     String title;
 
@@ -8,20 +12,13 @@ public class Card {
 
     String date;
 
-    public Card(String title, String text,String date){
-        this.title=title;
-        this.text=text;
-        this.date=date;
+    public int getId() {
+        return id;
     }
 
-    public String getDate() {
-        return date;
+    public void setId(int id) {
+        this.id = id;
     }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
 
     public String getTitle() {
         return title;
@@ -37,5 +34,13 @@ public class Card {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }

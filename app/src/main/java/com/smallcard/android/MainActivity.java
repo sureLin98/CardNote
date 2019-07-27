@@ -6,6 +6,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -34,13 +35,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.litepal.LitePal;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import static org.litepal.LitePal.getDatabase;
 
 public class MainActivity extends AppCompatActivity implements EditFragment.EditTextListener {
 
@@ -89,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
         ActionBar actionBar=getSupportActionBar();
         cardView=findViewById(R.id.card_view);
         editFragment=new EditFragment();
+
+        SQLiteDatabase database=LitePal.getDatabase();
 
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -195,16 +205,33 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
             add_card.setVisibility(View.VISIBLE);
 
+            SimpleDateFormat simpleDateFormat=new SimpleDateFormat("M月dd日 HH:mm");
+
+            Date date=new Date(System.currentTimeMillis());
+
+            String dateString=simpleDateFormat.format(date);
+
+            Log.d(TAG, "sendText: <---------------------->date="+dateString);
+
             Layout layout=editText.getLayout();
 
             String firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0)-4);
 
-            card=new Card(firstLineText,editText.getText().toString().substring(layout.getLineEnd(0)-4));
+            String text=editText.getText().toString().substring(layout.getLineEnd(0)-4);
+
+            card=new Card(firstLineText,text,dateString);
 
             list.add(card);
             adapter=new CardAdapter(list);
             recyclerView.setAdapter(adapter);
             Toast.makeText(MainActivity.this,"已添加",Toast.LENGTH_SHORT).show();
+
+            /**添加数据到数据库中**/
+            Note note=new Note();
+            note.setTitle(firstLineText);
+            note.setText(text);
+            note.setDate(dateString);
+            note.save();
 
         }else{
 
@@ -215,5 +242,6 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
         FragmentManager fragmentManager=getSupportFragmentManager();
         fragmentManager.beginTransaction().remove(editFragment).commit();
         add_card.setVisibility(View.VISIBLE);
+        editText.setText(null);
     }
 }

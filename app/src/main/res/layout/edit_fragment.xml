@@ -15,7 +15,8 @@
     android:background="@null"
     android:padding="5dp"
     android:scrollbars="vertical"
-    android:scrollbarSize="3dp"/>
+    android:scrollbarSize="3dp"
+    android:focusable="true" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/edit_ok"

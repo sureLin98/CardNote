@@ -1,0 +1,7 @@
+<litepal>
+    <dbname value="Note"/>
+    <version value="1"/>
+    <list>
+        <mapping class="com.smallcard.android.Note"></mapping>
+    </list>
+</litepal>
