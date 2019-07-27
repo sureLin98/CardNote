@@ -39,14 +39,25 @@
 
         </LinearLayout>
 
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/frame_layout"
+        android:layout_width="match_parent"
+        android:layout_gravity="bottom"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize">
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/add_card"
-        android:foreground="@mipmap/add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:layout_margin="15dp" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/add_card"
+            android:foreground="@mipmap/add"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="15dp" />
+
+    </android.support.design.widget.CoordinatorLayout>
+
+
+
 
 </FrameLayout>
 

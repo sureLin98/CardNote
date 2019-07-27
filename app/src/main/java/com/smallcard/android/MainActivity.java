@@ -1,5 +1,6 @@
 package com.smallcard.android;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
@@ -11,6 +12,9 @@ import android.support.annotation.NonNull;
 import android.support.design.internal.BaselineLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -23,6 +27,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,7 +42,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements EditFragment.EditTextListener {
 
     DrawerLayout drawerLayout;
 
@@ -45,7 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
     NavigationView nav;
 
-    FloatingActionButton add_card;
+    public FloatingActionButton add_card;
+
+    FloatingActionButton edit_ok;
 
     LinearLayout linearLayout;
 
@@ -57,10 +64,13 @@ public class MainActivity extends AppCompatActivity {
 
     String TAG="MainActivity";
 
-    Integer i=1;
+    RecyclerView recyclerView;
 
+    EditFragment editFragment;
+
+    @SuppressLint("RestrictedApi")
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         /**状态栏沉浸**/
@@ -78,65 +88,29 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         ActionBar actionBar=getSupportActionBar();
         cardView=findViewById(R.id.card_view);
+        editFragment=new EditFragment();
 
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.mipmap.ic_launcher_round);
         }
 
-        final RecyclerView recyclerView=findViewById(R.id.recycleView) ;
+        recyclerView=findViewById(R.id.recycleView) ;
         LinearLayoutManager layoutManager=new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         adapter=new CardAdapter(list);
-        recyclerView.setAdapter(adapter);
 
         add_card.setOnClickListener(new View.OnClickListener() {
+
+            @SuppressLint("RestrictedApi")
             @Override
             public void onClick(View v) {
 
-                AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("请编辑卡片");
-                final View view=LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_edit,null);
-                builder.setView(view);
+                replaceFragment(editFragment);
+                add_card.setVisibility(View.GONE);
 
-
-                builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                        EditText title=view.findViewById(R.id.dialog_title);
-                        EditText text=view.findViewById(R.id.dialog_text);
-
-                        String textString=text.getText().toString();
-                        String titleString=title.getText().toString();
-
-                        Card card;
-                        if(title.length()>0){
-                            card=new Card(titleString,textString);
-                        }else{
-                            card=new Card("卡片"+i,textString);
-                            i++;
-                        }
-
-                        list.add(card);
-                        adapter=new CardAdapter(list);
-                        recyclerView.setAdapter(adapter);
-                        Toast.makeText(MainActivity.this,"已添加",Toast.LENGTH_SHORT).show();
-
-                    }
-                });
-
-                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                builder.show();
             }
         });
-
 
         /**侧滑栏各按钮功能**/
         nav.setCheckedItem(R.id.all_card);
@@ -200,5 +174,46 @@ public class MainActivity extends AppCompatActivity {
             editText.setFocusableInTouchMode(mode);
 
         }
+    }
+
+    private void replaceFragment(Fragment fragment){
+        FragmentManager fragmentManager=getSupportFragmentManager();
+        FragmentTransaction transaction=fragmentManager.beginTransaction();
+        transaction.addToBackStack(null);
+        transaction.replace(R.id.frame_layout,fragment);
+        transaction.commit();
+    }
+
+    //回调
+    @SuppressLint("RestrictedApi")
+    @Override
+    public void sendText(EditText editText) {
+
+        Card card;
+
+        if(editText.length()>0){
+
+            add_card.setVisibility(View.VISIBLE);
+
+            Layout layout=editText.getLayout();
+
+            String firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0)-4);
+
+            card=new Card(firstLineText,editText.getText().toString().substring(layout.getLineEnd(0)-4));
+
+            list.add(card);
+            adapter=new CardAdapter(list);
+            recyclerView.setAdapter(adapter);
+            Toast.makeText(MainActivity.this,"已添加",Toast.LENGTH_SHORT).show();
+
+        }else{
+
+            Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
+
+        }
+
+        FragmentManager fragmentManager=getSupportFragmentManager();
+        fragmentManager.beginTransaction().remove(editFragment).commit();
+        add_card.setVisibility(View.VISIBLE);
     }
 }

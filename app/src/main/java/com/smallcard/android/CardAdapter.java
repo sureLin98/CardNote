@@ -8,9 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
@@ -48,9 +48,9 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
         CardView cardView;
 
-        EditText title;
+        TextView title;
 
-        EditText text;
+        TextView text;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
