@@ -29,9 +29,11 @@ public class EditFragment extends Fragment {
 
     FloatingActionButton editOk;
 
-    public static EditText editText;
+    public EditText editText;
 
-    private EditTextListener editTextListener;
+    public static String txt=null;
+
+    EditTextListener editTextListener;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
@@ -76,5 +78,21 @@ public class EditFragment extends Fragment {
         MainActivity mainActivity=(MainActivity)getActivity();
         mainActivity.add_card.setVisibility(View.VISIBLE);
         super.onPause();
+    }
+
+    public EditText getEditText() {
+        return editText;
+    }
+
+    public void setTxt(String txt){
+        this.txt=txt;
+    }
+
+    public static String getTxt() {
+        return txt;
+    }
+
+    public void setEditText(EditText editText) {
+        this.editText= editText;
     }
 }

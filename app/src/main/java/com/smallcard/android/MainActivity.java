@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.internal.BaselineLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -42,6 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.litepal.LitePal;
+import org.litepal.crud.DataSupport;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ import java.util.List;
 
 import static org.litepal.LitePal.getDatabase;
 
-public class MainActivity extends AppCompatActivity implements EditFragment.EditTextListener {
+public class MainActivity extends AppCompatActivity implements EditFragment.EditTextListener{
 
     DrawerLayout drawerLayout;
 
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
     NavigationView nav;
 
-    public FloatingActionButton add_card;
+    public static FloatingActionButton add_card;
 
     FloatingActionButton edit_ok;
 
@@ -75,6 +77,14 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
     RecyclerView recyclerView;
 
     EditFragment editFragment;
+
+    int lineend;
+
+    EditText et;
+
+    CardAdapter.ReEditListener reEditListener;
+
+    String firstLineText,text,date;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -100,6 +110,8 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
         SQLiteDatabase database=LitePal.getDatabase();
 
+
+
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.mipmap.ic_launcher_round);
@@ -110,15 +122,18 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
         recyclerView.setLayoutManager(layoutManager);
         adapter=new CardAdapter(list);
 
+        LoadData();
+
+        adapter=new CardAdapter(list);
+        recyclerView.setAdapter(adapter);
+
         add_card.setOnClickListener(new View.OnClickListener() {
 
             @SuppressLint("RestrictedApi")
             @Override
             public void onClick(View v) {
-
-                replaceFragment(editFragment);
-                add_card.setVisibility(View.GONE);
-
+                Intent intent=new Intent(MainActivity.this,EditActivity.class);
+                startActivityForResult(intent,1);
             }
         });
 
@@ -141,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
                 return true;
             }
         });
-
     }
 
     @Override
@@ -167,30 +181,11 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
         return true;
     }
 
-    /**EditText的可编辑性**/
-    public void setEditable(EditText editText,boolean mode){
-        if(mode){
-
-            editText.setFocusableInTouchMode(mode);
-
-            editText.setFocusable(mode);
-
-            editText.requestFocus();
-
-        }else{
-
-            editText.setFocusable(mode);
-
-            editText.setFocusableInTouchMode(mode);
-
-        }
-    }
-
-    private void replaceFragment(Fragment fragment){
-        FragmentManager fragmentManager=getSupportFragmentManager();
+    public void replaceFragment(Fragment fragment){
+        FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction=fragmentManager.beginTransaction();
         transaction.addToBackStack(null);
-        transaction.replace(R.id.frame_layout,fragment);
+        transaction.replace(R.id.frame,fragment);
         transaction.commit();
     }
 
@@ -203,6 +198,10 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
         if(editText.length()>0){
 
+            String firstLineText;
+
+            String text;
+
             add_card.setVisibility(View.VISIBLE);
 
             SimpleDateFormat simpleDateFormat=new SimpleDateFormat("M月dd日 HH:mm");
@@ -211,21 +210,24 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
             String dateString=simpleDateFormat.format(date);
 
-            Log.d(TAG, "sendText: <---------------------->date="+dateString);
-
             Layout layout=editText.getLayout();
 
-            String firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0)-4);
+            lineend=layout.getLineEnd(0);
 
-            String text=editText.getText().toString().substring(layout.getLineEnd(0)-4);
+            if(editText.getLineCount()==1){
+                firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0));
+                text=editText.getText().toString().substring(layout.getLineEnd(0));
+            }else{
+                firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0)-4);
+                text=editText.getText().toString().substring(layout.getLineEnd(0)-4);
+            }
 
             card=new Card(firstLineText,text,dateString);
 
             list.add(card);
-            adapter=new CardAdapter(list);
-            recyclerView.setAdapter(adapter);
+            adapter.notifyItemInserted(list.size());
             Toast.makeText(MainActivity.this,"已添加",Toast.LENGTH_SHORT).show();
-
+            //adapter.getHolder().cardView.setClickable(false);
             /**添加数据到数据库中**/
             Note note=new Note();
             note.setTitle(firstLineText);
@@ -234,14 +236,72 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
             note.save();
 
         }else{
-
-            Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
-
+            //Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
         }
 
         FragmentManager fragmentManager=getSupportFragmentManager();
         fragmentManager.beginTransaction().remove(editFragment).commit();
         add_card.setVisibility(View.VISIBLE);
         editText.setText(null);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if(resultCode==RESULT_OK){
+            firstLineText=data.getStringExtra("firstLineText");
+            text=data.getStringExtra("txt");
+            date=data.getStringExtra("date");
+            displayCardText();
+        }
+    }
+
+    /**载入数据**/
+    public void LoadData(){
+
+        Card card;
+
+        List<Note> noteList= DataSupport.findAll(Note.class);
+        adapter=new CardAdapter(list);
+        if(noteList.size()>0){
+            for(Note note : noteList){
+                card=new Card(note.getTitle(),note.getText(),note.getDate());
+                //list.add(card);
+                adapter.addData(card,0);
+            }
+
+            recyclerView.setAdapter(adapter);
+        }
+    }
+
+    @SuppressLint("RestrictedApi")
+    public void displayCardText(){
+
+        Card card;
+
+        if(firstLineText!=null){
+
+
+            card=new Card(firstLineText,text,date);
+
+            //list.add(card);
+            adapter=new CardAdapter(list);
+            adapter.addData(card,0);
+            recyclerView.setAdapter(adapter);
+            Toast.makeText(MainActivity.this,"已添加",Toast.LENGTH_SHORT).show();
+
+            /**添加数据到数据库中**/
+            Note note=new Note();
+            note.setTitle(firstLineText);
+            note.setText(text);
+            note.setDate(date);
+            note.save();
+
+        }else{
+
+            Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
+
+        }
+
     }
 }
