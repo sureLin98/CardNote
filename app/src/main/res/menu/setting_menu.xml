@@ -7,8 +7,7 @@
         android:id="@+id/search_button"
         android:title="搜索"
         android:icon="@mipmap/search"
-        app:showAsAction="always"
-        />
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/setting_1"

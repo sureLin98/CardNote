@@ -80,10 +80,6 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
     int lineend;
 
-    EditText et;
-
-    CardAdapter.ReEditListener reEditListener;
-
     String firstLineText,text,date;
 
     @SuppressLint("RestrictedApi")
@@ -108,25 +104,20 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
         cardView=findViewById(R.id.card_view);
         editFragment=new EditFragment();
 
-        SQLiteDatabase database=LitePal.getDatabase();
-
-
-
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.mipmap.ic_launcher_round);
+            actionBar.setHomeAsUpIndicator(R.mipmap.menu);
         }
 
         recyclerView=findViewById(R.id.recycleView) ;
         LinearLayoutManager layoutManager=new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         adapter=new CardAdapter(list);
+        recyclerView.setAdapter(adapter);
 
         LoadData();
 
-        adapter=new CardAdapter(list);
-        recyclerView.setAdapter(adapter);
-
+        //adapter=new CardAdapter(list);
         add_card.setOnClickListener(new View.OnClickListener() {
 
             @SuppressLint("RestrictedApi")
@@ -161,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.setting_menu,menu);
-
         return true;
     }
 
@@ -249,9 +239,9 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if(resultCode==RESULT_OK){
-            firstLineText=data.getStringExtra("firstLineText");
+            firstLineText=data.getStringExtra("fLT");
             text=data.getStringExtra("txt");
-            date=data.getStringExtra("date");
+            date=data.getStringExtra("dateString");
             displayCardText();
         }
     }
@@ -279,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
         Card card;
 
-        if(firstLineText!=null){
+        if((firstLineText+text)!=null){
 
 
             card=new Card(firstLineText,text,date);
@@ -302,6 +292,5 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
             Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
 
         }
-
     }
 }

@@ -1,32 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#fff">
+    android:background="#fff"
+    android:fitsSystemWindows="true">
 
-
-
-    <EditText
-        android:id="@+id/edit_text1"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@null"
-        android:padding="5dp"
-        android:scrollbars="vertical"
-        android:scrollbarSize="3dp"
-        android:focusable="true" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="#0080ff" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/edit_ok1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:foreground="@mipmap/edit_ok"
-        android:layout_margin="15dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"/>
+        android:layout_gravity="bottom|end"
+        android:layout_margin="15dp" />
 
-</RelativeLayout>
+    <LinearLayout
+        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <EditText
+            android:id="@+id/edit_text1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:padding="5dp"
+            android:scrollbars="vertical"
+            android:scrollbarSize="3dp"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+
+
+</android.support.design.widget.CoordinatorLayout>
 
 

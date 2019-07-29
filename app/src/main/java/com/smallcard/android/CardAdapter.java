@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,19 +45,29 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
         holder=new ViewHolder(view);
 
-        holder.cardView.setOnClickListener(new View.OnClickListener() {
+
+
+        return holder;
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
+        final Card card=cardList.get(i);
+        final int position=i;
+        viewHolder.title.setText(card.title);
+        viewHolder.text.setText(card.text);
+        viewHolder.date.setText(card.date);
+        viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    int position=holder.getAdapterPosition();
-                    Card card=cardList.get(position);
-                    Intent intent=new Intent(context,EditActivity.class);
-                    intent.putExtra("title",card.getTitle());
-                    intent.putExtra("text",card.getText());
-                    context.startActivity(intent);
+                Intent intent=new Intent(context,EditActivity.class);
+                intent.putExtra("title",card.title);
+                intent.putExtra("text",card.text);
+                context.startActivity(intent);
             }
         });
 
-        holder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
+        viewHolder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
 
@@ -68,27 +79,14 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
                 dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
-
-
+                        removeData(position);
                     }
                 });
-
                 dialog.show();
 
                 return true;
             }
         });
-
-        return holder;
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        Card card=cardList.get(i);
-        viewHolder.title.setText(card.title);
-        viewHolder.text.setText(card.text);
-        viewHolder.date.setText(card.date);
     }
 
     @Override
@@ -119,15 +117,19 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         }
     }
 
-    public interface ReEditListener{
-        void reEdit(Card card,int position);
+    public void addData(Card card,int position){
+        cardList.add(position,card);
+        notifyItemInserted(position);
+        notifyItemRangeChanged(0,cardList.size());
+
     }
 
-    public void addData(Card card,int position){
-
-        cardList.add(position,card);
-
-        notifyItemInserted(position);
-
+    public void removeData(int position){
+        Card card=cardList.get(position);
+        SQLiteDatabase db=LitePal.getDatabase();
+        db.execSQL("delete from Note where title='"+card.title+"'and text='"+card.text+"'");
+        cardList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(0,cardList.size());
     }
 }
