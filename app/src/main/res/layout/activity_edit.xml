@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#fff"
+    android:background="#0fff"
     android:fitsSystemWindows="true">
 
     <android.support.v7.widget.Toolbar
@@ -27,6 +27,7 @@
         android:layout_height="match_parent">
 
         <EditText
+            android:layout_margin="7dp"
             android:id="@+id/edit_text1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -34,11 +35,10 @@
             android:padding="5dp"
             android:scrollbars="vertical"
             android:scrollbarSize="3dp"
-            android:focusable="true" />
+            android:focusable="true"
+            android:fadeScrollbars="true"/>
 
     </LinearLayout>
-
-
 
 </android.support.design.widget.CoordinatorLayout>
 

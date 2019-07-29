@@ -64,6 +64,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
                 intent.putExtra("title",card.title);
                 intent.putExtra("text",card.text);
                 context.startActivity(intent);
+                removeData(position);
             }
         });
 

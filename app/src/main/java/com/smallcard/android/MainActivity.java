@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.mipmap.menu);
         }
+        actionBar.setTitle("全部便签");
 
         recyclerView=findViewById(R.id.recycleView) ;
         LinearLayoutManager layoutManager=new LinearLayoutManager(this);
@@ -117,7 +118,6 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
         LoadData();
 
-        //adapter=new CardAdapter(list);
         add_card.setOnClickListener(new View.OnClickListener() {
 
             @SuppressLint("RestrictedApi")
@@ -218,12 +218,15 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
             adapter.notifyItemInserted(list.size());
             Toast.makeText(MainActivity.this,"已添加",Toast.LENGTH_SHORT).show();
             //adapter.getHolder().cardView.setClickable(false);
+
             /**添加数据到数据库中**/
+            /*
             Note note=new Note();
             note.setTitle(firstLineText);
             note.setText(text);
             note.setDate(dateString);
             note.save();
+            */
 
         }else{
             //Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
@@ -250,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
     public void LoadData(){
 
         Card card;
-
+        list.clear();
         List<Note> noteList= DataSupport.findAll(Note.class);
         adapter=new CardAdapter(list);
         if(noteList.size()>0){
@@ -271,26 +274,21 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
         if((firstLineText+text)!=null){
 
-
             card=new Card(firstLineText,text,date);
 
-            //list.add(card);
             adapter=new CardAdapter(list);
             adapter.addData(card,0);
             recyclerView.setAdapter(adapter);
-            Toast.makeText(MainActivity.this,"已添加",Toast.LENGTH_SHORT).show();
-
-            /**添加数据到数据库中**/
-            Note note=new Note();
-            note.setTitle(firstLineText);
-            note.setText(text);
-            note.setDate(date);
-            note.save();
-
         }else{
 
             Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
 
         }
+    }
+
+    @Override
+    protected void onRestart() {
+        LoadData();
+        super.onRestart();
     }
 }

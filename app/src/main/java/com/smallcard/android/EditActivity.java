@@ -28,26 +28,21 @@ public class EditActivity extends AppCompatActivity {
 
     Toolbar toolbar;
 
+   public static ActionBar actionBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        /*
-        if(Build.VERSION.SDK_INT>=21){
-            View decorView=getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
-        }
-        */
         setContentView(R.layout.activity_edit);
 
         toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
+        actionBar=getSupportActionBar();
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
         }
+        actionBar.setTitle(null);
 
         final Intent intent=getIntent();
         final String title=intent.getStringExtra("title");
@@ -85,16 +80,19 @@ public class EditActivity extends AppCompatActivity {
                         text=editText.getText().toString().substring(layout.getLineEnd(0)-1);
                     }
 
-
-
-                    //Intent mintent=new Intent(EditActivity.this,MainActivity.class);
                     Intent mintent=new Intent();
                     mintent.putExtra("fLT",firstLineText);
                     mintent.putExtra("txt",text);
                     mintent.putExtra("dateString",dateString);
                     setResult(RESULT_OK,mintent);
 
-                    Toast.makeText(EditActivity.this,"已添加",Toast.LENGTH_SHORT).show();
+                    Note note=new Note();
+                    note.setTitle(firstLineText);
+                    note.setText(text);
+                    note.setDate(dateString);
+                    note.save();
+
+                    //Toast.makeText(EditActivity.this,"已添加",Toast.LENGTH_SHORT).show();
 
                     finish();
 
