@@ -7,7 +7,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Layout;
 import android.view.MenuItem;
@@ -15,10 +14,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.Toast;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 public class EditActivity extends AppCompatActivity {
 
@@ -30,7 +27,7 @@ public class EditActivity extends AppCompatActivity {
 
    public static ActionBar actionBar;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_edit);
@@ -58,51 +55,7 @@ public class EditActivity extends AppCompatActivity {
         edit_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                String firstLineText;
-
-                String text;
-
-                if(editText.length()>0){
-
-                    SimpleDateFormat simpleDateFormat=new SimpleDateFormat("M月dd日 HH:mm");
-
-                    Date date=new Date(System.currentTimeMillis());
-
-                    Layout layout=editText.getLayout();
-
-                    String dateString=simpleDateFormat.format(date);
-                    if(editText.getLineCount()==1){
-                        firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0));
-                        text=editText.getText().toString().substring(layout.getLineEnd(0));
-                    }else{
-                        firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0)-1);
-                        text=editText.getText().toString().substring(layout.getLineEnd(0)-1);
-                    }
-
-                    Intent mintent=new Intent();
-                    mintent.putExtra("fLT",firstLineText);
-                    mintent.putExtra("txt",text);
-                    mintent.putExtra("dateString",dateString);
-                    setResult(RESULT_OK,mintent);
-
-                    Note note=new Note();
-                    note.setTitle(firstLineText);
-                    note.setText(text);
-                    note.setDate(dateString);
-                    note.save();
-
-                    //Toast.makeText(EditActivity.this,"已添加",Toast.LENGTH_SHORT).show();
-
-                    finish();
-
-                }else{
-
-                    Toast.makeText(EditActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
-
-                    finish();
-                }
-
+                finish();
             }
         });
     }
@@ -133,4 +86,46 @@ public class EditActivity extends AppCompatActivity {
         }
     }
 
+    public void save(){
+        String firstLineText;
+
+        String text;
+
+        if(editText.length()>0){
+
+            SimpleDateFormat simpleDateFormat=new SimpleDateFormat("M月dd日 HH:mm");
+
+            Date date=new Date(System.currentTimeMillis());
+
+            Layout layout=editText.getLayout();
+
+            String dateString=simpleDateFormat.format(date);
+            if(editText.getLineCount()==1){
+                firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0));
+                text=editText.getText().toString().substring(layout.getLineEnd(0));
+            }else{
+                firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0)-1);
+                text=editText.getText().toString().substring(layout.getLineEnd(0)-1);
+            }
+
+            Intent mintent=new Intent();
+            mintent.putExtra("fLT",firstLineText);
+            mintent.putExtra("txt",text);
+            mintent.putExtra("dateString",dateString);
+            setResult(RESULT_OK,mintent);
+
+            Note note=new Note();
+            note.setTitle(firstLineText);
+            note.setText(text);
+            note.setDate(dateString);
+            note.save();
+
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        save();
+        super.onPause();
+    }
 }

@@ -62,10 +62,6 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
     public static FloatingActionButton add_card;
 
-    FloatingActionButton edit_ok;
-
-    LinearLayout linearLayout;
-
     CardView cardView;
 
     private List<Card> list=new ArrayList<>();
@@ -281,13 +277,14 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
             recyclerView.setAdapter(adapter);
         }else{
 
-            Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
 
         }
     }
 
     @Override
     protected void onRestart() {
+        displayCardText();
         LoadData();
         super.onRestart();
     }

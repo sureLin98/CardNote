@@ -45,8 +45,6 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
         holder=new ViewHolder(view);
 
-
-
         return holder;
     }
 
