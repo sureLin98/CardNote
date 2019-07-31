@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.TextView;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -25,6 +27,8 @@ public class EditActivity extends AppCompatActivity {
 
     Toolbar toolbar;
 
+    TextView dateText;
+
    public static ActionBar actionBar;
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -33,6 +37,7 @@ public class EditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit);
 
         toolbar=findViewById(R.id.toolbar);
+        dateText=findViewById(R.id.edit_date);
         setSupportActionBar(toolbar);
         actionBar=getSupportActionBar();
         if(actionBar!=null){
@@ -44,12 +49,14 @@ public class EditActivity extends AppCompatActivity {
         final Intent intent=getIntent();
         final String title=intent.getStringExtra("title");
         final String text=intent.getStringExtra("text");
+        final String date=intent.getStringExtra("date");
 
         editText=findViewById(R.id.edit_text1);
         edit_ok=findViewById(R.id.edit_ok1);
 
         if(title!=null){
             editText.setText(title+text);
+            dateText.setText(date);
         }
 
         edit_ok.setOnClickListener(new View.OnClickListener() {
