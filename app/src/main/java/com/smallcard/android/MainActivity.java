@@ -3,9 +3,11 @@ package com.smallcard.android;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
+import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
@@ -52,7 +54,7 @@ import java.util.List;
 
 import static org.litepal.LitePal.getDatabase;
 
-public class MainActivity extends AppCompatActivity implements EditFragment.EditTextListener{
+public class MainActivity extends AppCompatActivity{
 
     DrawerLayout drawerLayout;
 
@@ -68,20 +70,24 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
 
     private CardAdapter adapter;
 
-    String TAG="MainActivity";
-
     RecyclerView recyclerView;
 
-    EditFragment editFragment;
-
-    int lineend;
-
     String firstLineText,text,date;
+
+    public static boolean is_widget=false;
+
+    private static final String PREFS_NAME = "com.smallcard.android.NoteWidget";
+
+    private static final String PREF_PREFIX_KEY = "appwidget_";
+
+    int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
     @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setResult(RESULT_CANCELED);
 
         /**状态栏沉浸**/
         if(Build.VERSION.SDK_INT>=21){
@@ -98,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
         setSupportActionBar(toolbar);
         ActionBar actionBar=getSupportActionBar();
         cardView=findViewById(R.id.card_view);
-        editFragment=new EditFragment();
 
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -143,6 +148,13 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
                 return true;
             }
         });
+
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            mAppWidgetId = extras.getInt(
+                    AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        }
     }
 
     @Override
@@ -167,74 +179,6 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
         return true;
     }
 
-    public void replaceFragment(Fragment fragment){
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction transaction=fragmentManager.beginTransaction();
-        transaction.addToBackStack(null);
-        transaction.replace(R.id.frame,fragment);
-        transaction.commit();
-    }
-
-    //回调
-    @SuppressLint("RestrictedApi")
-    @Override
-    public void sendText(EditText editText) {
-
-        Card card;
-
-        if(editText.length()>0){
-
-            String firstLineText;
-
-            String text;
-
-            add_card.setVisibility(View.VISIBLE);
-
-            SimpleDateFormat simpleDateFormat=new SimpleDateFormat("M月dd日 HH:mm");
-
-            Date date=new Date(System.currentTimeMillis());
-
-            String dateString=simpleDateFormat.format(date);
-
-            Layout layout=editText.getLayout();
-
-            lineend=layout.getLineEnd(0);
-
-            if(editText.getLineCount()==1){
-                firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0));
-                text=editText.getText().toString().substring(layout.getLineEnd(0));
-            }else{
-                firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0)-4);
-                text=editText.getText().toString().substring(layout.getLineEnd(0)-4);
-            }
-
-            card=new Card(firstLineText,text,dateString);
-
-            list.add(card);
-            adapter.notifyItemInserted(list.size());
-            Toast.makeText(MainActivity.this,"已添加",Toast.LENGTH_SHORT).show();
-            //adapter.getHolder().cardView.setClickable(false);
-
-            /**添加数据到数据库中**/
-            /*
-            Note note=new Note();
-            note.setTitle(firstLineText);
-            note.setText(text);
-            note.setDate(dateString);
-            note.save();
-            */
-
-        }else{
-            //Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
-        }
-
-        FragmentManager fragmentManager=getSupportFragmentManager();
-        fragmentManager.beginTransaction().remove(editFragment).commit();
-        add_card.setVisibility(View.VISIBLE);
-        editText.setText(null);
-
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if(resultCode==RESULT_OK){
@@ -255,7 +199,6 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
         if(noteList.size()>0){
             for(Note note : noteList){
                 card=new Card(note.getTitle(),note.getText(),note.getDate());
-                //list.add(card);
                 adapter.addData(card,0);
             }
 
@@ -264,27 +207,55 @@ public class MainActivity extends AppCompatActivity implements EditFragment.Edit
     }
 
     @SuppressLint("RestrictedApi")
-    public void displayCardText(){
+    public void displayCardText() {
 
         Card card;
 
-        if((firstLineText+text)!=null){
+        if ((firstLineText + text) != null) {
 
-            card=new Card(firstLineText,text,date);
+            card = new Card(firstLineText, text, date);
 
-            adapter=new CardAdapter(list);
-            adapter.addData(card,0);
+            adapter = new CardAdapter(list);
+            adapter.addData(card, 0);
             recyclerView.setAdapter(adapter);
-        }else{
-
-            //Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
-
         }
+    }
+
+    static void saveTitlePref(Context context, int appWidgetId, String text) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        prefs.putString(PREF_PREFIX_KEY + appWidgetId, text);
+        prefs.apply();
+    }
+
+    static String loadTitlePref(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String titleValue = prefs.getString(PREF_PREFIX_KEY + appWidgetId, "加载错误");
+        return titleValue;
+    }
+
+    static void deleteTitlePref(Context context, int appWidgetId) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        prefs.remove(PREF_PREFIX_KEY + appWidgetId);
+        prefs.apply();
+    }
+
+    public void addWidgetText(String txt){
+        final Context context = MainActivity.this;
+
+        String widgetText = txt;
+        saveTitlePref(context, mAppWidgetId, widgetText);
+
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        NoteWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId);
+
+        Intent resultValue = new Intent();
+        resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+        setResult(RESULT_OK, resultValue);
+        finish();
     }
 
     @Override
     protected void onRestart() {
-        displayCardText();
         LoadData();
         super.onRestart();
     }

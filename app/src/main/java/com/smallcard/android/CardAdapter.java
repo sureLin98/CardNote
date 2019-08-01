@@ -58,12 +58,17 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(context,EditActivity.class);
-                intent.putExtra("title",card.title);
-                intent.putExtra("text",card.text);
-                intent.putExtra("date",card.date);
-                context.startActivity(intent);
-                removeData(position);
+                if(MainActivity.is_widget){
+                    MainActivity cActivity=(MainActivity) context;
+                    cActivity.addWidgetText(card.title+card.text);
+                }else {
+                    Intent intent=new Intent(context,EditActivity.class);
+                    intent.putExtra("title",card.title);
+                    intent.putExtra("text",card.text);
+                    intent.putExtra("date",card.date);
+                    context.startActivity(intent);
+                    removeData(position);
+                }
             }
         });
 
