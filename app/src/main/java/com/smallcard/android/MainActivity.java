@@ -1,5 +1,6 @@
 package com.smallcard.android;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
@@ -8,8 +9,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,6 +30,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -40,6 +44,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -74,6 +79,8 @@ public class MainActivity extends AppCompatActivity{
 
     String firstLineText,text,date;
 
+    LinearLayout linearLayout;
+
     public static boolean is_widget=false;
 
     private static final String PREFS_NAME = "com.smallcard.android.NoteWidget";
@@ -81,6 +88,8 @@ public class MainActivity extends AppCompatActivity{
     private static final String PREF_PREFIX_KEY = "appwidget_";
 
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+
+    public static boolean layout_change=false;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -104,20 +113,16 @@ public class MainActivity extends AppCompatActivity{
         setSupportActionBar(toolbar);
         ActionBar actionBar=getSupportActionBar();
         cardView=findViewById(R.id.card_view);
+        recyclerView=findViewById(R.id.recycleView) ;
+        linearLayout=findViewById(R.id.linear_layout);
+
+        applyWritePermission();
 
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.mipmap.menu);
         }
         actionBar.setTitle("全部便签");
-
-        recyclerView=findViewById(R.id.recycleView) ;
-        LinearLayoutManager layoutManager=new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-        adapter=new CardAdapter(list);
-        recyclerView.setAdapter(adapter);
-
-        LoadData();
 
         add_card.setOnClickListener(new View.OnClickListener() {
 
@@ -128,6 +133,8 @@ public class MainActivity extends AppCompatActivity{
                 startActivityForResult(intent,1);
             }
         });
+
+
 
         /**侧滑栏各按钮功能**/
         nav.setCheckedItem(R.id.all_card);
@@ -155,6 +162,29 @@ public class MainActivity extends AppCompatActivity{
             mAppWidgetId = extras.getInt(
                     AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        SharedPreferences prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
+
+        linearLayout.setBackground(Drawable.createFromPath(prf.getString("image_path",null)));
+
+        if(prf.getBoolean("grid_layout_switch_status",false)){
+            GridLayoutManager layoutManager=new GridLayoutManager(this,2);
+            recyclerView.setLayoutManager(layoutManager);
+        }else{
+            LinearLayoutManager layoutManager=new LinearLayoutManager(this);
+            recyclerView.setLayoutManager(layoutManager);
+        }
+
+        adapter=new CardAdapter(list);
+        recyclerView.setAdapter(adapter);
+        LoadData();
+
+        super.onResume();
     }
 
     @Override
@@ -163,13 +193,23 @@ public class MainActivity extends AppCompatActivity{
         return true;
     }
 
-    /**顶部栏右上角设置按钮**/
+    /**顶部栏按钮**/
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
 
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
+                break;
+
+            case R.id.setting:
+                Intent startSetting= new Intent(MainActivity.this, SettingActivity.class);
+                startActivity(startSetting);
+                break;
+
+            case R.id.about:
+                Intent startAbout=new Intent(MainActivity.this,AboutActivity.class);
+                startActivity(startAbout);
                 break;
 
             default:
@@ -181,12 +221,20 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if(resultCode==RESULT_OK){
-            firstLineText=data.getStringExtra("fLT");
-            text=data.getStringExtra("txt");
-            date=data.getStringExtra("dateString");
-            displayCardText();
-        }
+            switch (requestCode){
+                case 1:
+                    if(resultCode==RESULT_OK) {
+                        Log.d("Test", "onActivityResult: 1");
+                        firstLineText = data.getStringExtra("fLT");
+                        text = data.getStringExtra("txt");
+                        date = data.getStringExtra("dateString");
+                        displayCardText();
+                    }
+                    break;
+
+                default:
+                    break;
+            }
     }
 
     /**载入数据**/
@@ -259,4 +307,29 @@ public class MainActivity extends AppCompatActivity{
         LoadData();
         super.onRestart();
     }
+
+    public void applyWritePermission(){
+        String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        if (Build.VERSION.SDK_INT >= 23) {
+            int check = ContextCompat.checkSelfPermission(this, permissions[0]);
+            if (check == PackageManager.PERMISSION_GRANTED) {
+
+            } else {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            }
+        } else {
+
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+        } else {
+            Toast.makeText(this, "无法获取必要权限", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

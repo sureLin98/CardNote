@@ -4,21 +4,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/search_button"
-        android:title="搜索"
-        android:icon="@mipmap/search"
-        app:showAsAction="always"/>
+        android:id="@+id/setting"
+        android:title="设置"/>
 
     <item
-        android:id="@+id/setting_1"
-        android:title="设置1"/>
-
-    <item
-        android:id="@+id/setting_2"
-        android:title="设置2"/>
-
-    <item
-        android:id="@+id/setting_3"
-        android:title="设置3"/>
+        android:id="@+id/about"
+        android:title="关于"/>
 
 </menu>
