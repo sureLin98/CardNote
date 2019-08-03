@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">卡片便签</string>
+    <string name="appbar_scrolling_view_behavior" translatable="false">android.support.design.widget.AppBarLayout$ScrollingViewBehavior</string>
 </resources>

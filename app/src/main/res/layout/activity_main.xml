@@ -10,35 +10,42 @@
     tools:context=".MainActivity">
 
 
-    <FrameLayout
+    <android.support.design.widget.CoordinatorLayout
         android:id="@+id/frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         android:background="#0080ff">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/tool_bar"
+        <android.support.design.widget.AppBarLayout
             android:layout_width="match_parent"
-            android:background="#0080ff"
-            android:layout_height="?attr/actionBarSize"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+            android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:id="@+id/linear_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="?attr/actionBarSize"
-            android:orientation="vertical">
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recycleView"
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/tool_bar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:background="#0080ff"
+                android:layout_height="?attr/actionBarSize"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                app:layout_scrollFlags="scroll|enterAlways|snap"/>
+
+        </android.support.design.widget.AppBarLayout>
+
+           <LinearLayout
+               android:id="@+id/linear_layout"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:layout_marginTop="?attr/actionBarSize"
+               android:orientation="vertical">
+
+               <android.support.v7.widget.RecyclerView
+                   android:id="@+id/recycleView"
+                   android:layout_width="match_parent"
+                   android:layout_height="match_parent"/>
 
 
-        </LinearLayout>
+           </LinearLayout>
 
     <android.support.design.widget.CoordinatorLayout
         android:id="@+id/frame_layout"
@@ -57,10 +64,7 @@
 
     </android.support.design.widget.CoordinatorLayout>
 
-
-
-
-</FrameLayout>
+</android.support.design.widget.CoordinatorLayout>
 
 
   <android.support.design.widget.NavigationView
@@ -68,7 +72,6 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:layout_gravity="start"
-      app:headerLayout="@layout/nav_head_layout"
-      app:menu="@menu/faction_menu"/>
+      app:headerLayout="@layout/nav_head_layout" />
 
 </android.support.v4.widget.DrawerLayout>
