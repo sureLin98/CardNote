@@ -21,6 +21,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.internal.BaselineLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -53,6 +54,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -107,7 +109,7 @@ public class MainActivity extends AppCompatActivity{
 
     SharedPreferences prf;
 
-    String imageP=null;
+    SeekBar seekBar;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -135,9 +137,11 @@ public class MainActivity extends AppCompatActivity{
         recyclerView=findViewById(R.id.recycleView) ;
         linearLayout=findViewById(R.id.linear_layout);
 
-        View navHeaderView=nav.getHeaderView(0);
+        final View navHeaderView=nav.getHeaderView(0);
 
         grid_layout_switch=navHeaderView.findViewById(R.id.chang_to_gridLayout);
+        seekBar=navHeaderView.findViewById(R.id.seek_bar);
+        seekBar.setMax(255);
 
         //初始化设置信息的缓存
         prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
@@ -153,7 +157,7 @@ public class MainActivity extends AppCompatActivity{
         }
         actionBar.setTitle("全部便签");
 
-        Log.d("Test", "onCreate: grid="+prf.getBoolean("grid_layout_switch_status",false));
+       // Log.d("Test", "onCreate: grid="+prf.getBoolean("grid_layout_switch_status",false));
         if(prf.getBoolean("grid_layout_switch_status",false)){
             GridLayoutManager layoutManager=new GridLayoutManager(this,2);
             recyclerView.setLayoutManager(layoutManager);
@@ -181,6 +185,34 @@ public class MainActivity extends AppCompatActivity{
                     AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
 
+        String p=prf.getString("card_transparency_status","88");
+        seekBar.setProgress(Integer.valueOf(p,16));
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(progress!=0){
+                    editor.putString("card_transparency",Integer.toHexString(progress));
+                    adapter=new CardAdapter(list);
+                    editor.apply();
+                    LoadData();
+                }
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                editor.putString("card_transparency_status",Integer.toHexString(seekBar.getProgress()));
+                editor.apply();
+            }
+
+        });
+
         relativeLayout=navHeaderView.findViewById(R.id.image_set);
         relativeLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -189,7 +221,7 @@ public class MainActivity extends AppCompatActivity{
                 if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED) {
 
                     Intent intent = new Intent(Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(intent, IMAGE_REQUEST_CODE);
 
                 }else{
@@ -415,56 +447,12 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    /*
-    @Override
-    protected void onResume() {
-        SharedPreferences prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
-
-        linearLayout.setBackground(Drawable.createFromPath(prf.getString("image_path",null)));
-
-        if(prf.getBoolean("grid_layout_switch_status",false)){
-            GridLayoutManager layoutManager=new GridLayoutManager(this,2);
-            recyclerView.setLayoutManager(layoutManager);
-        }else{
-            LinearLayoutManager layoutManager=new LinearLayoutManager(this);
-            recyclerView.setLayoutManager(layoutManager);
-        }
-
-        adapter=new CardAdapter(list);
-        recyclerView.setAdapter(adapter);
-        LoadData();
-
-        super.onResume();
-    }
-    */
-
     @Override
     protected void onResume() {
         if(prf.getString("image_path",null)!=null){
             linearLayout.setBackground(Drawable.createFromPath(prf.getString("image_path",null)));
-        }else{
-            Toast.makeText(MainActivity.this,"未知错误",Toast.LENGTH_SHORT).show();
         }
         super.onResume();
     }
 
-    /*
-    @Override
-    protected void onPause() {
-
-        if(grid_layout_switch.isChecked()){
-
-            editor.putBoolean("grid_layout_switch_status",true);
-
-        }else{
-
-            editor.putBoolean("grid_layout_switch_status",false);
-
-        }
-
-        editor.apply();
-
-        super.onPause();
-    }
-    */
 }

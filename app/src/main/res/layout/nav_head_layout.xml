@@ -10,6 +10,19 @@
         android:layout_height="250dp"
         android:background="#0080ff"/>
 
+    <Switch
+        android:id="@+id/chang_to_gridLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5dp"
+        android:textSize="17sp"
+        android:text="启用网格布局"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#eee"/>
+
     <RelativeLayout
         android:id="@+id/image_set"
         android:clickable="true"
@@ -40,13 +53,24 @@
         android:layout_height="1dp"
         android:background="#eee"/>
 
-    <Switch
-        android:id="@+id/chang_to_gridLayout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="5dp"
-        android:textSize="17sp"
-        android:text="启用网格布局"/>
+        android:orientation="vertical">
+        <TextView
+            android:layout_marginTop="5dp"
+            android:text="卡片透明度："
+            android:textSize="17sp"
+            android:textColor="#000000"
+            android:layout_marginLeft="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <SeekBar
+            android:layout_marginTop="3dp"
+            android:id="@+id/seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
 
 

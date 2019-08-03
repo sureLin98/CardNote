@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
@@ -20,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,12 +61,21 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         final Card card=cardList.get(i);
         final int position=i;
         SharedPreferences prf=context.getSharedPreferences("com.smallcard.SettingData",Context.MODE_PRIVATE);
-        String date_position=prf.getString("date_position","left");
 
         viewHolder.title.setText(card.title);
         viewHolder.text.setText(card.text);
         viewHolder.date.setText(card.date);
 
+        Integer num=Integer.valueOf(prf.getString("card_transparency","ff"),16);
+        if(num<16){
+            viewHolder.cardView.setBackgroundColor(Color.parseColor("#00ffffff"));
+        }else{
+            viewHolder.cardView.setBackgroundColor(Color.parseColor("#"+prf.getString("card_transparency","ff")+"ffffff"));
+
+        }
+        Log.d("Test", "onBindViewHolder: 值="+prf.getString("card_transparency","ff"));
+        viewHolder.cardView.setRadius(10);
+        //viewHolder.cardView.setBackgroundColor(Color.parseColor("#99ffffff"));
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,6 +135,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         TextView date;
 
         RelativeLayout relativeLayout;
+
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

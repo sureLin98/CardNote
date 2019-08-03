@@ -13,7 +13,8 @@ public class NoteWidget extends AppWidgetProvider {
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
 
-        MainActivity.is_widget=true;
+
+
         CharSequence widgetText = MainActivity.loadTitlePref(context, appWidgetId);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.note_widget);
         views.setTextViewText(R.id.text,widgetText);
@@ -24,6 +25,7 @@ public class NoteWidget extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         for (int appWidgetId : appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId);
+            MainActivity.is_widget=true;
         }
     }
 

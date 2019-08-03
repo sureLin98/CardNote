@@ -12,14 +12,12 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="#0080ff" />
+
     <android.support.design.widget.CoordinatorLayout
         android:layout_marginTop="?attr/actionBarSize"
         android:layout_width="match_parent"
         android:background="#fff"
         android:layout_height="match_parent">
-
-
-
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/edit_ok1"

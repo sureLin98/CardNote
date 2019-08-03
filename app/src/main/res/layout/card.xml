@@ -7,8 +7,8 @@
     android:id="@+id/card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="#aaffffff"
     android:layout_margin="10dp"
-    android:background="#0fff"
     app:cardCornerRadius="10dp">
 
     <LinearLayout
