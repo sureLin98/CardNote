@@ -2,6 +2,7 @@ package com.smallcard.android;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
@@ -10,15 +11,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Layout;
-import android.util.DisplayMetrics;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.litepal.LitePal;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,7 +33,10 @@ public class EditActivity extends AppCompatActivity {
 
     TextView dateText;
 
-    public static ActionBar actionBar;
+    ActionBar actionBar;
+
+    String title,text,dateString;
+    int position;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -57,20 +60,20 @@ public class EditActivity extends AppCompatActivity {
         }
         actionBar.setTitle("编辑便签");
 
-        SharedPreferences prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
-        String date_position=prf.getString("date_position","center");
-
-        final Intent intent=getIntent();
-        final String title=intent.getStringExtra("title");
-        final String text=intent.getStringExtra("text");
-        final String date=intent.getStringExtra("date");
-
         editText=findViewById(R.id.edit_text1);
         edit_ok=findViewById(R.id.edit_ok1);
 
+        SharedPreferences prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
+
+        Intent intent=getIntent();
+        title=intent.getStringExtra("title");
+        text=intent.getStringExtra("text");
+        dateString=intent.getStringExtra("date");
+        position=intent.getIntExtra("position",-1);
+
         if(title!=null){
             editText.setText(title+text);
-            dateText.setText(date);
+            dateText.setText(dateString);
         }
 
         edit_ok.setOnClickListener(new View.OnClickListener() {
@@ -79,6 +82,12 @@ public class EditActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        //自动弹出输入法
+        editText.setFocusable(true);
+        editText.setFocusableInTouchMode(true);
+        editText.requestFocus();
+
     }
 
     @Override
@@ -95,9 +104,10 @@ public class EditActivity extends AppCompatActivity {
     }
 
     public void save(){
-        String firstLineText;
 
-        String text;
+        String ntitle;
+
+        String ntext;
 
         if(editText.length()>0){
 
@@ -107,27 +117,43 @@ public class EditActivity extends AppCompatActivity {
 
             Layout layout=editText.getLayout();
 
-            String dateString=simpleDateFormat.format(date);
+            String ndate=simpleDateFormat.format(date);
+
             if(editText.getLineCount()==1){
-                firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0));
-                text=editText.getText().toString().substring(layout.getLineEnd(0));
+                ntitle=editText.getText().toString().substring(0,layout.getLineEnd(0));
+                ntext=editText.getText().toString().substring(layout.getLineEnd(0));
             }else{
-                firstLineText=editText.getText().toString().substring(0,layout.getLineEnd(0)-1);
-                text=editText.getText().toString().substring(layout.getLineEnd(0)-1);
+                ntitle=editText.getText().toString().substring(0,layout.getLineEnd(0)-1);
+                ntext=editText.getText().toString().substring(layout.getLineEnd(0)-1);
             }
 
-            Intent mintent=new Intent();
-            mintent.putExtra("fLT",firstLineText);
-            mintent.putExtra("txt",text);
-            mintent.putExtra("dateString",dateString);
-            setResult(RESULT_OK,mintent);
+            if(ntitle.equals(title) && ntext.equals(text)){
+                Intent mintent=new Intent();
+                mintent.putExtra("fLT",title);
+                mintent.putExtra("txt",text);
+                mintent.putExtra("dateString",dateString);
+                setResult(RESULT_OK,mintent);
 
-            Note note=new Note();
-            note.setTitle(firstLineText);
-            note.setText(text);
-            note.setDate(dateString);
-            note.save();
+            }else{
+                Intent mintent=new Intent();
+                mintent.putExtra("fLT",ntitle);
+                mintent.putExtra("txt",ntext);
+                mintent.putExtra("dateString",ndate);
+                setResult(RESULT_OK,mintent);
 
+                Note note=new Note();
+                note.setTitle(ntitle);
+                note.setText(ntext);
+                note.setDate(ndate);
+                note.save();
+
+                SQLiteDatabase db= LitePal.getDatabase();
+                db.execSQL("delete from Note where title='"+title+"'and text='"+text+"'");
+
+            }
+
+        }else{
+            Toast.makeText(EditActivity.this,"未输入文本",Toast.LENGTH_SHORT);
         }
     }
 

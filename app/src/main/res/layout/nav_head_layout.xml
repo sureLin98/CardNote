@@ -70,9 +70,53 @@
             android:id="@+id/seek_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
+
     </LinearLayout>
 
+    <View
+        android:layout_marginTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#eee"/>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:layout_marginTop="5dp"
+            android:text="桌面小部件透明度："
+            android:textSize="17sp"
+            android:textColor="#000000"
+            android:layout_marginLeft="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <RadioGroup
+            android:id="@+id/widget_RG"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/transparency"
+                android:text="全透明"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content" />
+
+            <RadioButton
+                android:id="@+id/translucent"
+                android:text="半透明"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content" />
+
+            <RadioButton
+                android:id="@+id/opaque"
+                android:text="不透明"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content" />
+        </RadioGroup>
+
+    </LinearLayout>
 
 
 </LinearLayout>

@@ -53,6 +53,8 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -109,7 +111,11 @@ public class MainActivity extends AppCompatActivity{
 
     SharedPreferences prf;
 
-    SeekBar seekBar;
+    SeekBar cardSeekBar,widgetSeekBar;
+
+    RadioButton transparency,translucent,opaque;
+
+    RadioGroup widgetRG;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -127,6 +133,10 @@ public class MainActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_main);
 
+        if(is_widget){
+            Toast.makeText(this,"请选择要添加到桌面的便签",Toast.LENGTH_SHORT).show();
+        }
+
         toolbar=findViewById(R.id.tool_bar);
         drawerLayout=findViewById(R.id.drawer_layout);
         nav=findViewById(R.id.nav_view);
@@ -140,8 +150,12 @@ public class MainActivity extends AppCompatActivity{
         final View navHeaderView=nav.getHeaderView(0);
 
         grid_layout_switch=navHeaderView.findViewById(R.id.chang_to_gridLayout);
-        seekBar=navHeaderView.findViewById(R.id.seek_bar);
-        seekBar.setMax(255);
+        cardSeekBar=navHeaderView.findViewById(R.id.seek_bar);
+        cardSeekBar.setMax(255);
+        widgetRG=navHeaderView.findViewById(R.id.widget_RG);
+        transparency=navHeaderView.findViewById(R.id.transparency);
+        translucent=navHeaderView.findViewById(R.id.translucent);
+        opaque=navHeaderView.findViewById(R.id.opaque);
 
         //初始化设置信息的缓存
         prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
@@ -157,7 +171,6 @@ public class MainActivity extends AppCompatActivity{
         }
         actionBar.setTitle("全部便签");
 
-       // Log.d("Test", "onCreate: grid="+prf.getBoolean("grid_layout_switch_status",false));
         if(prf.getBoolean("grid_layout_switch_status",false)){
             GridLayoutManager layoutManager=new GridLayoutManager(this,2);
             recyclerView.setLayoutManager(layoutManager);
@@ -185,10 +198,36 @@ public class MainActivity extends AppCompatActivity{
                     AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
 
-        String p=prf.getString("card_transparency_status","88");
-        seekBar.setProgress(Integer.valueOf(p,16));
+        //小部件透明度选项
+        switch (prf.getInt("widget_trans",0)){
+            case 0:
+                transparency.setChecked(true);
+                break;
+            case 1:
+                translucent.setChecked(true);
+                break;
+            case 2:
+                opaque.setChecked(true);
+                break;
+        }
+        widgetRG.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if(checkedId==R.id.transparency){
+                    editor.putInt("widget_trans",0);
+                }else if(checkedId==R.id.translucent){
+                    editor.putInt("widget_trans",1);
+                }else if(checkedId==R.id.opaque){
+                    editor.putInt("widget_trans",2);
+                }
+                editor.apply();
+            }
+        });
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        String p=prf.getString("card_transparency_status","88");
+        cardSeekBar.setProgress(Integer.valueOf(p,16));
+
+        cardSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(progress!=0){
@@ -356,8 +395,8 @@ public class MainActivity extends AppCompatActivity{
 
         Card card;
         list.clear();
-        List<Note> noteList= DataSupport.findAll(Note.class);
         adapter=new CardAdapter(list);
+        List<Note> noteList= DataSupport.findAll(Note.class);
         if(noteList.size()>0){
             for(Note note : noteList){
                 card=new Card(note.getTitle(),note.getText(),note.getDate());

@@ -60,22 +60,22 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         final Card card=cardList.get(i);
         final int position=i;
-        SharedPreferences prf=context.getSharedPreferences("com.smallcard.SettingData",Context.MODE_PRIVATE);
+        final SharedPreferences prf=context.getSharedPreferences("com.smallcard.SettingData",Context.MODE_PRIVATE);
 
         viewHolder.title.setText(card.title);
         viewHolder.text.setText(card.text);
         viewHolder.date.setText(card.date);
 
         Integer num=Integer.valueOf(prf.getString("card_transparency","ff"),16);
+
+        //修改透明度
         if(num<16){
             viewHolder.cardView.setBackgroundColor(Color.parseColor("#00ffffff"));
         }else{
             viewHolder.cardView.setBackgroundColor(Color.parseColor("#"+prf.getString("card_transparency","ff")+"ffffff"));
 
         }
-        Log.d("Test", "onBindViewHolder: 值="+prf.getString("card_transparency","ff"));
-        viewHolder.cardView.setRadius(10);
-        //viewHolder.cardView.setBackgroundColor(Color.parseColor("#99ffffff"));
+
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,8 +87,8 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
                     intent.putExtra("title",card.title);
                     intent.putExtra("text",card.text);
                     intent.putExtra("date",card.date);
+                    intent.putExtra("position",position);
                     context.startActivity(intent);
-                    removeData(position);
                 }
             }
         });
