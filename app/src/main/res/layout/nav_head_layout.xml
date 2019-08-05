@@ -100,19 +100,21 @@
             <RadioButton
                 android:id="@+id/transparency"
                 android:text="全透明"
-                android:layout_width="150dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <RadioButton
                 android:id="@+id/translucent"
+                android:layout_marginLeft="40dp"
                 android:text="半透明"
-                android:layout_width="150dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <RadioButton
                 android:id="@+id/opaque"
+                android:layout_marginLeft="40dp"
                 android:text="不透明"
-                android:layout_width="150dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </RadioGroup>
 

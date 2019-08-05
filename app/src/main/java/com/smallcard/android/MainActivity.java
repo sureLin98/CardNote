@@ -494,4 +494,9 @@ public class MainActivity extends AppCompatActivity{
         super.onResume();
     }
 
+    @Override
+    protected void onDestroy() {
+        is_widget=false;
+        super.onDestroy();
+    }
 }
