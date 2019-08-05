@@ -48,6 +48,7 @@
             android:layout_height="wrap_content"
             android:background="@null"
             android:padding="3dp"
+            android:autoLink="all"
             android:scrollbars="vertical"
             android:layout_marginLeft="5dp"
             android:layout_marginBottom="5dp"

@@ -1,5 +1,6 @@
 package com.smallcard.android;
 
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.v7.app.ActionBar;
@@ -8,10 +9,14 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 public class AboutActivity extends AppCompatActivity {
 
     Toolbar toolbar;
+
+    TextView version;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,6 +27,7 @@ public class AboutActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_about);
 
+        version=findViewById(R.id.version);
         toolbar=findViewById(R.id.about_toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar=getSupportActionBar();
