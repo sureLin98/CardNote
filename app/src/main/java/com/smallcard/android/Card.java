@@ -2,14 +2,12 @@ package com.smallcard.android;
 
 public class Card {
 
-    String title;
 
     String text;
 
     String date;
 
-    public Card(String title, String text,String date){
-        this.title=title;
+    public Card(String text,String date){
         this.text=text;
         this.date=date;
     }
@@ -20,15 +18,6 @@ public class Card {
 
     public void setDate(String date) {
         this.date = date;
-    }
-
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getText() {

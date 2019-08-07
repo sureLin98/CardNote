@@ -79,7 +79,6 @@ public class EditActivity extends AppCompatActivity {
         SharedPreferences prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
 
         Intent intent=getIntent();
-        title=intent.getStringExtra("title");
         text=intent.getStringExtra("text");
         dateString=intent.getStringExtra("date");
         int num=intent.getIntExtra("text_num",0);
@@ -89,8 +88,8 @@ public class EditActivity extends AppCompatActivity {
         //Log.d("Test", "onCreate: loadtext="+MainActivity.loadTitlePref(EditActivity.this,widgetId)+"\n"+MainActivity.is_widget);
 
         if(!editWidgetText){
-            if(title!=null){
-                editText.setText(title+text);
+            if(text!=null){
+                editText.setText(text);
                 dateText.setText(dateString);
             }
             textNum.setText(String.valueOf(num));
@@ -104,15 +103,6 @@ public class EditActivity extends AppCompatActivity {
                 editText.setText(widgetText);
                 textNum.setText(String.valueOf(n));
                 Log.d("Test", ">>>>>>>>>>onCreate: widgettext"+widgetText);
-
-                Layout wl=editText.getLayout();
-                if(editText.getLineCount()==1){
-                    title=editText.getText().toString().substring(0,wl.getLineEnd(0));
-                    text=editText.getText().toString().substring(wl.getLineEnd(0));
-                }else{
-                    title=editText.getText().toString().substring(0,wl.getLineEnd(0)-1);
-                    text=editText.getText().toString().substring(wl.getLineEnd(0)-1);
-                }
 
             }else{
                 Toast.makeText(EditActivity.this,"未知错误",Toast.LENGTH_SHORT);
@@ -183,6 +173,7 @@ public class EditActivity extends AppCompatActivity {
 
             String ndate=simpleDateFormat.format(date);
 
+            /*
             if(editText.getLineCount()==1){
                 ntitle=editText.getText().toString().substring(0,layout.getLineEnd(0));
                 ntext=editText.getText().toString().substring(layout.getLineEnd(0));
@@ -190,8 +181,10 @@ public class EditActivity extends AppCompatActivity {
                 ntitle=editText.getText().toString().substring(0,layout.getLineEnd(0)-1);
                 ntext=editText.getText().toString().substring(layout.getLineEnd(0)-1);
             }
+            */
+            ntext=editText.getText().toString();
 
-            if((ntitle+ntext).equals(title+text) || (ntitle+ntext).equals(widgetText)){
+            if(ntext.equals(text) || ntext.equals(widgetText)){
 
                 //文本未改动时不用保存直接返回原文本
                 Intent mintent=new Intent();
@@ -204,19 +197,17 @@ public class EditActivity extends AppCompatActivity {
 
                 //文本有改动则删除原文本，保存当前文本到数据库中并将新内容返回
                 Intent mintent=new Intent();
-                mintent.putExtra("fLT",ntitle);
                 mintent.putExtra("txt",ntext);
                 mintent.putExtra("dateString",ndate);
                 setResult(RESULT_OK,mintent);
 
                 Note note=new Note();
-                note.setTitle(ntitle);
                 note.setText(ntext);
                 note.setDate(ndate);
                 note.save();
 
                 SQLiteDatabase db= LitePal.getDatabase();
-                db.execSQL("delete from Note where title='"+title+"'and text='"+text+"'");
+                db.execSQL("delete from Note where text='"+text+"'");
 
                 if(editWidgetText){
 
@@ -226,10 +217,9 @@ public class EditActivity extends AppCompatActivity {
 
                     Log.d("Test", "save: EditActivity广播已发送>>>>>>>>>>>>");
 
-                    db.execSQL("delete from Note where title='"+wti+"'and text='"+wtx+"'");
+                    db.execSQL("delete from Note where text='"+widgetText+"'");
                 }
-
-
+                
             }
 
         }else{

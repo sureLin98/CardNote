@@ -341,7 +341,6 @@ public class MainActivity extends AppCompatActivity{
                 case 1:
                     if(resultCode==RESULT_OK) {
                         //Log.d("Test", "onActivityResult: 1");
-                        firstLineText = data.getStringExtra("fLT");
                         text = data.getStringExtra("txt");
                         date = data.getStringExtra("dateString");
                         displayCardText();
@@ -406,7 +405,7 @@ public class MainActivity extends AppCompatActivity{
         List<Note> noteList= DataSupport.findAll(Note.class);
         if(noteList.size()>0){
             for(Note note : noteList){
-                card=new Card(note.getTitle(),note.getText(),note.getDate());
+                card=new Card(note.getText(),note.getDate());
                 adapter.addData(card,0);
             }
             recyclerView.setAdapter(adapter);
@@ -421,7 +420,7 @@ public class MainActivity extends AppCompatActivity{
 
         if ((firstLineText + text) != null) {
 
-            card = new Card(firstLineText, text, date);
+            card = new Card(text, date);
 
             adapter = new CardAdapter(list);
             adapter.addData(card, 0);
@@ -497,6 +496,7 @@ public class MainActivity extends AppCompatActivity{
         if(prf.getString("image_path",null)!=null){
             linearLayout.setBackground(Drawable.createFromPath(prf.getString("image_path",null)));
         }
+
         super.onResume();
     }
 

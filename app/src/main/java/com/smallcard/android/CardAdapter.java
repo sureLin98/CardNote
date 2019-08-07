@@ -62,7 +62,6 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         final int position=i;
         final SharedPreferences prf=context.getSharedPreferences("com.smallcard.SettingData",Context.MODE_PRIVATE);
 
-        viewHolder.title.setText(card.title);
         viewHolder.text.setText(card.text);
         viewHolder.date.setText(card.date);
 
@@ -80,15 +79,14 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
             public void onClick(View v) {
                 if(MainActivity.is_widget){
                     MainActivity cActivity=(MainActivity) context;
-                    cActivity.addWidgetText(card.title+card.text);
+                    cActivity.addWidgetText(card.text);
                 }else {
                     Intent intent=new Intent(context,EditActivity.class);
-                    intent.putExtra("title",card.title);
                     intent.putExtra("text",card.text);
                     intent.putExtra("date",card.date);
                     intent.putExtra("is_edit_widget_text",false);
                     intent.putExtra("position",position);
-                    intent.putExtra("text_num",(card.title+card.text).length());
+                    intent.putExtra("text_num",(card.text).length());
                     context.startActivity(intent);
                 }
             }
@@ -125,8 +123,6 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
         CardView cardView;
 
-        TextView title;
-
         TextView text;
 
         TextView date;
@@ -137,7 +133,6 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             cardView=(CardView)itemView;
-            title=itemView.findViewById(R.id.title);
             text=itemView.findViewById(R.id.text);
             date=itemView.findViewById(R.id.date);
             relativeLayout=itemView.findViewById(R.id.date_relative_layout);
@@ -154,7 +149,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     public void removeData(int position){
         Card card=cardList.get(position);
         SQLiteDatabase db=LitePal.getDatabase();
-        db.execSQL("delete from Note where title='"+card.title+"'and text='"+card.text+"'");
+        db.execSQL("delete from Note where text='"+card.text+"'");
         cardList.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(0,cardList.size());

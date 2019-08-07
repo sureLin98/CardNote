@@ -30,7 +30,7 @@ public class NoteWidget extends AppWidgetProvider {
             //接收更新小部件的广播
             widgetText=intent.getStringExtra("new_widget_text");
             MainActivity.saveTitlePref(context,EditActivity.widgetId,widgetText);
-            //updateAppWidget(context,awm,EditActivity.widgetId);
+            updateAppWidget(context,awm,EditActivity.widgetId);
             if(views!=null){
                 views.setTextViewText(R.id.text,widgetText);
             }
