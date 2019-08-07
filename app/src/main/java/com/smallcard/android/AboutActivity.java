@@ -1,6 +1,6 @@
 package com.smallcard.android;
 
-import android.content.pm.PackageManager;
+
 import android.graphics.Color;
 import android.os.Build;
 import android.support.v7.app.ActionBar;
@@ -33,9 +33,10 @@ public class AboutActivity extends AppCompatActivity {
         ActionBar actionBar=getSupportActionBar();
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeButtonEnabled(true);
-            actionBar.setTitle("关于");
+            actionBar.setHomeAsUpIndicator(R.mipmap.row);
         }
+        actionBar.setTitle("关于");
+        toolbar.setTitleTextColor(Color.WHITE);
     }
 
     @Override

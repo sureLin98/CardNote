@@ -28,7 +28,7 @@
 
         <activity
             android:name=".EditActivity"
-            android:windowSoftInputMode="adjustResize|stateAlwaysVisible|adjustPan"/>
+           android:windowSoftInputMode="adjustResize|adjustPan|stateAlwaysVisible"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTask"

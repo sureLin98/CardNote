@@ -14,6 +14,7 @@ import android.text.Editable;
 import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -28,8 +29,6 @@ import java.util.Date;
 public class EditActivity extends AppCompatActivity {
 
     EditText editText;
-
-    FloatingActionButton edit_ok;
 
     Toolbar toolbar;
 
@@ -50,6 +49,8 @@ public class EditActivity extends AppCompatActivity {
     String widgetText;
     String wti=null,wtx=null;
 
+    boolean isDelete;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +63,8 @@ public class EditActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_edit);
 
+        isDelete=false;
+
         textNum=findViewById(R.id.text_num);
         toolbar=findViewById(R.id.toolbar);
         dateText=findViewById(R.id.edit_date);
@@ -69,12 +72,13 @@ public class EditActivity extends AppCompatActivity {
         actionBar=getSupportActionBar();
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.mipmap.row);
             actionBar.setHomeButtonEnabled(true);
         }
         actionBar.setTitle("编辑便签");
+        toolbar.setTitleTextColor(Color.WHITE);
 
         editText=findViewById(R.id.edit_text1);
-        edit_ok=findViewById(R.id.edit_ok1);
 
         SharedPreferences prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
 
@@ -110,7 +114,6 @@ public class EditActivity extends AppCompatActivity {
 
         }
 
-
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -129,13 +132,6 @@ public class EditActivity extends AppCompatActivity {
             }
         });
 
-        edit_ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
         //自动弹出输入法
         editText.setFocusable(true);
         editText.setFocusableInTouchMode(true);
@@ -144,9 +140,26 @@ public class EditActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.edit_menu,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:
+                finish();
+                break;
+
+            case R.id.delete:
+                isDelete=true;
+                SQLiteDatabase db= LitePal.getDatabase();
+                db.execSQL("delete from Note where text='"+editText.getText().toString()+"'");
+                finish();
+                break;
+
+            case R.id.save:
                 finish();
                 break;
 
@@ -219,7 +232,7 @@ public class EditActivity extends AppCompatActivity {
 
                     db.execSQL("delete from Note where text='"+widgetText+"'");
                 }
-                
+
             }
 
         }else{
@@ -229,7 +242,15 @@ public class EditActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        save();
+        if(!isDelete){
+            save();
+        }
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        //save();
+        super.onDestroy();
     }
 }

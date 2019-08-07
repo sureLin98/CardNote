@@ -496,7 +496,6 @@ public class MainActivity extends AppCompatActivity{
         if(prf.getString("image_path",null)!=null){
             linearLayout.setBackground(Drawable.createFromPath(prf.getString("image_path",null)));
         }
-
         super.onResume();
     }
 
