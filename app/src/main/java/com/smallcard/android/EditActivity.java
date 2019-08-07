@@ -10,7 +10,9 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.Layout;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,7 +38,17 @@ public class EditActivity extends AppCompatActivity {
     ActionBar actionBar;
 
     String title,text,dateString;
+
     int position;
+
+    TextView textNum;
+
+    public static int widgetId=0;
+
+    boolean editWidgetText=false;
+
+    String widgetText;
+    String wti=null,wtx=null;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -50,6 +62,7 @@ public class EditActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_edit);
 
+        textNum=findViewById(R.id.text_num);
         toolbar=findViewById(R.id.toolbar);
         dateText=findViewById(R.id.edit_date);
         setSupportActionBar(toolbar);
@@ -69,12 +82,62 @@ public class EditActivity extends AppCompatActivity {
         title=intent.getStringExtra("title");
         text=intent.getStringExtra("text");
         dateString=intent.getStringExtra("date");
+        int num=intent.getIntExtra("text_num",0);
         position=intent.getIntExtra("position",-1);
+        editWidgetText=intent.getBooleanExtra("is_edit_widget_text",true);
 
-        if(title!=null){
-            editText.setText(title+text);
-            dateText.setText(dateString);
+        //Log.d("Test", "onCreate: loadtext="+MainActivity.loadTitlePref(EditActivity.this,widgetId)+"\n"+MainActivity.is_widget);
+
+        if(!editWidgetText){
+            if(title!=null){
+                editText.setText(title+text);
+                dateText.setText(dateString);
+            }
+            textNum.setText(String.valueOf(num));
+        }else{
+            //显示并编辑小部件文本
+            SharedPreferences widgetPrf=getSharedPreferences("com.smallcard.SettingData",0);
+            widgetText=widgetPrf.getString("widget_text",null);
+            //Log.d("Test", "EditActivity>>>>onCreate: widget_text="+widgetText);
+            if (widgetText != null) {
+                int n=widgetText.length();
+                editText.setText(widgetText);
+                textNum.setText(String.valueOf(n));
+                Log.d("Test", ">>>>>>>>>>onCreate: widgettext"+widgetText);
+
+                Layout wl=editText.getLayout();
+                if(editText.getLineCount()==1){
+                    title=editText.getText().toString().substring(0,wl.getLineEnd(0));
+                    text=editText.getText().toString().substring(wl.getLineEnd(0));
+                }else{
+                    title=editText.getText().toString().substring(0,wl.getLineEnd(0)-1);
+                    text=editText.getText().toString().substring(wl.getLineEnd(0)-1);
+                }
+
+            }else{
+                Toast.makeText(EditActivity.this,"未知错误",Toast.LENGTH_SHORT);
+            }
+
         }
+
+
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String content = editText.getText().toString();
+                textNum.setText(String.valueOf(content.length()));
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
         edit_ok.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,6 +174,7 @@ public class EditActivity extends AppCompatActivity {
 
         if(editText.length()>0){
 
+            //获取时间ndate,标题ntitle，正文ntext
             SimpleDateFormat simpleDateFormat=new SimpleDateFormat("M月dd日 HH:mm");
 
             Date date=new Date(System.currentTimeMillis());
@@ -127,7 +191,9 @@ public class EditActivity extends AppCompatActivity {
                 ntext=editText.getText().toString().substring(layout.getLineEnd(0)-1);
             }
 
-            if(ntitle.equals(title) && ntext.equals(text)){
+            if((ntitle+ntext).equals(title+text) || (ntitle+ntext).equals(widgetText)){
+
+                //文本未改动时不用保存直接返回原文本
                 Intent mintent=new Intent();
                 mintent.putExtra("fLT",title);
                 mintent.putExtra("txt",text);
@@ -135,6 +201,8 @@ public class EditActivity extends AppCompatActivity {
                 setResult(RESULT_OK,mintent);
 
             }else{
+
+                //文本有改动则删除原文本，保存当前文本到数据库中并将新内容返回
                 Intent mintent=new Intent();
                 mintent.putExtra("fLT",ntitle);
                 mintent.putExtra("txt",ntext);
@@ -149,6 +217,18 @@ public class EditActivity extends AppCompatActivity {
 
                 SQLiteDatabase db= LitePal.getDatabase();
                 db.execSQL("delete from Note where title='"+title+"'and text='"+text+"'");
+
+                if(editWidgetText){
+
+                    Intent updateWidgetText=new Intent("com.smallcard.WIDGET_TEXT_UPDATE");
+                    updateWidgetText.putExtra("new_widget_text",editText.getText().toString());
+                    sendBroadcast(updateWidgetText);
+
+                    Log.d("Test", "save: EditActivity广播已发送>>>>>>>>>>>>");
+
+                    db.execSQL("delete from Note where title='"+wti+"'and text='"+wtx+"'");
+                }
+
 
             }
 

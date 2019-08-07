@@ -39,6 +39,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Layout;
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity{
 
     NavigationView nav;
 
-    public static FloatingActionButton add_card;
+    FloatingActionButton add_card;
 
     CardView cardView;
 
@@ -105,7 +106,9 @@ public class MainActivity extends AppCompatActivity{
 
     final int IMAGE_REQUEST_CODE=2;
 
-    Switch grid_layout_switch;
+    RadioGroup layout_RG;
+
+    RadioButton linearlayout,gridlayout,pubulayout;
 
     SharedPreferences.Editor editor;
 
@@ -149,7 +152,10 @@ public class MainActivity extends AppCompatActivity{
 
         final View navHeaderView=nav.getHeaderView(0);
 
-        grid_layout_switch=navHeaderView.findViewById(R.id.chang_to_gridLayout);
+        layout_RG=navHeaderView.findViewById(R.id.layout_RG);
+        linearlayout=navHeaderView.findViewById(R.id.linearlayout_radio_button);
+        gridlayout=navHeaderView.findViewById(R.id.gridlayout_radio_button);
+        pubulayout=navHeaderView.findViewById(R.id.pubulayout_radio_button);
         cardSeekBar=navHeaderView.findViewById(R.id.seek_bar);
         cardSeekBar.setMax(255);
         widgetRG=navHeaderView.findViewById(R.id.widget_RG);
@@ -157,10 +163,10 @@ public class MainActivity extends AppCompatActivity{
         translucent=navHeaderView.findViewById(R.id.translucent);
         opaque=navHeaderView.findViewById(R.id.opaque);
 
+
         //初始化设置信息的缓存
         prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
         editor=prf.edit();
-        grid_layout_switch.setChecked(prf.getBoolean("grid_layout_switch_status",false));
 
         //请求权限
         applyWritePermission();
@@ -171,12 +177,19 @@ public class MainActivity extends AppCompatActivity{
         }
         actionBar.setTitle("全部便签");
 
-        if(prf.getBoolean("grid_layout_switch_status",false)){
+        if(prf.getString("card_layout","linearlayout").equals("gridlayout")){
             GridLayoutManager layoutManager=new GridLayoutManager(this,2);
             recyclerView.setLayoutManager(layoutManager);
+            gridlayout.setChecked(true);
+
+        }else if(prf.getString("card_layout","linearlayout").equals("pubulayout")){
+            StaggeredGridLayoutManager staggeredGridLayoutManager=new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(staggeredGridLayoutManager);
+            pubulayout.setChecked(true);
         }else{
             LinearLayoutManager layoutManager=new LinearLayoutManager(this);
             recyclerView.setLayoutManager(layoutManager);
+            linearlayout.setChecked(true);
         }
 
         LoadData();
@@ -187,6 +200,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 Intent intent=new Intent(MainActivity.this,EditActivity.class);
+                intent.putExtra("is_edit_widget_text",false);
                 startActivityForResult(intent,1);
             }
         });
@@ -272,32 +286,25 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-        grid_layout_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        layout_RG.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-                if(isChecked){
-                    GridLayoutManager layoutManager=new GridLayoutManager(MainActivity.this,2);
-                    recyclerView.setLayoutManager(layoutManager);
-                    recyclerView.setLayoutManager(layoutManager);
-                    adapter=new CardAdapter(list);
-                    recyclerView.setAdapter(adapter);
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if(checkedId==R.id.linearlayout_radio_button){
+                    editor.putString("card_layout","linearlayout");
+                    recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
                     LoadData();
-                    editor.putBoolean("grid_layout_switch_status",true);
-                }else {
-                    LinearLayoutManager layoutManager=new LinearLayoutManager(MainActivity.this);
-                    recyclerView.setLayoutManager(layoutManager);
-                    adapter=new CardAdapter(list);
-                    recyclerView.setAdapter(adapter);
+                }else if(checkedId==R.id.gridlayout_radio_button){
+                    editor.putString("card_layout","gridlayout");
+                    recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this,2));
                     LoadData();
-                    editor.putBoolean("grid_layout_switch_status",false);
+                }else if(checkedId==R.id.pubulayout_radio_button){
+                    editor.putString("card_layout","pubulayout");
+                    recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
+                    LoadData();
                 }
-
                 editor.apply();
-
             }
         });
-
     }
 
 
@@ -333,7 +340,7 @@ public class MainActivity extends AppCompatActivity{
             switch (requestCode){
                 case 1:
                     if(resultCode==RESULT_OK) {
-                        Log.d("Test", "onActivityResult: 1");
+                        //Log.d("Test", "onActivityResult: 1");
                         firstLineText = data.getStringExtra("fLT");
                         text = data.getStringExtra("txt");
                         date = data.getStringExtra("dateString");
@@ -402,7 +409,6 @@ public class MainActivity extends AppCompatActivity{
                 card=new Card(note.getTitle(),note.getText(),note.getDate());
                 adapter.addData(card,0);
             }
-
             recyclerView.setAdapter(adapter);
         }
     }

@@ -57,7 +57,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int i) {
         final Card card=cardList.get(i);
         final int position=i;
         final SharedPreferences prf=context.getSharedPreferences("com.smallcard.SettingData",Context.MODE_PRIVATE);
@@ -70,10 +70,9 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
         //修改透明度
         if(num<16){
-            viewHolder.cardView.setBackgroundColor(Color.parseColor("#00ffffff"));
+            viewHolder.cardView.setCardBackgroundColor(Color.parseColor("#00ffffff"));
         }else{
-            viewHolder.cardView.setBackgroundColor(Color.parseColor("#"+prf.getString("card_transparency","ff")+"ffffff"));
-
+            viewHolder.cardView.setCardBackgroundColor(Color.parseColor("#"+prf.getString("card_transparency","ff")+"ffffff"));
         }
 
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
@@ -87,7 +86,9 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
                     intent.putExtra("title",card.title);
                     intent.putExtra("text",card.text);
                     intent.putExtra("date",card.date);
+                    intent.putExtra("is_edit_widget_text",false);
                     intent.putExtra("position",position);
+                    intent.putExtra("text_num",(card.title+card.text).length());
                     context.startActivity(intent);
                 }
             }
@@ -118,10 +119,6 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     @Override
     public int getItemCount() {
         return cardList.size();
-    }
-
-    public ViewHolder getHolder() {
-        return holder;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder{
