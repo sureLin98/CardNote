@@ -2,12 +2,9 @@ package com.smallcard.android;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -21,18 +18,13 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.design.internal.BaselineLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.SearchView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
@@ -41,36 +33,24 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.Layout;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
-import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.litepal.LitePal;
 import org.litepal.crud.DataSupport;
 
-import java.text.SimpleDateFormat;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import static org.litepal.LitePal.getDatabase;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -114,11 +94,15 @@ public class MainActivity extends AppCompatActivity{
 
     SharedPreferences prf;
 
-    SeekBar cardSeekBar,widgetSeekBar;
+    SeekBar cardSeekBar;
 
     RadioButton transparency,translucent,opaque;
 
     RadioGroup widgetRG;
+
+    SearchView searchView;
+
+    SearchView.SearchAutoComplete searchAutoComplete;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -311,7 +295,62 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.setting_menu,menu);
-        return true;
+        MenuItem searchItem=menu.findItem(R.id.search_view);
+        searchView=(SearchView) searchItem.getActionView();
+        searchView.setQueryHint("搜索便签. . .");
+        searchAutoComplete=searchView.findViewById(R.id.search_src_text);
+        //searchAutoComplete.setTextColor(Color.WHITE);
+        setSearchListener();
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    //搜索
+    public void setSearchListener(){
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                LoadData();
+                return false;
+            }
+        });
+
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return true;
+            }
+
+            //查找便签
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Card card;
+                List<Card> findList=new ArrayList<>();
+                List<Note> findNote=DataSupport.where("text like ?","%"+newText+"%").find(Note.class);
+                Log.d("Test", "onQueryTextChange: newText="+newText);
+                adapter=new CardAdapter(findList);
+                if(findNote.size()>0){
+                    for(Note note : findNote){
+                        card=new Card(note.getText(),note.getDate());
+                        adapter.addData(card,0);
+                    }
+                }
+
+                if(prf.getString("card_layout","linearlayout").equals("pubulayout")) {
+                    StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+                    recyclerView.setLayoutManager(staggeredGridLayoutManager);
+                }
+
+                recyclerView.setAdapter(adapter);
+                return false;
+            }
+        });
     }
 
     /**顶部栏按钮**/
@@ -464,6 +503,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onRestart() {
         LoadData();
+        searchView.onActionViewCollapsed();
         super.onRestart();
     }
 

@@ -33,7 +33,7 @@ public class AboutActivity extends AppCompatActivity {
         ActionBar actionBar=getSupportActionBar();
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.mipmap.row);
+            actionBar.setHomeAsUpIndicator(R.mipmap.left_row);
         }
         actionBar.setTitle("关于");
         toolbar.setTitleTextColor(Color.WHITE);

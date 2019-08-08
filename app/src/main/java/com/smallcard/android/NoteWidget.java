@@ -22,23 +22,21 @@ public class NoteWidget extends AppWidgetProvider {
 
     public static String widgetText;
 
-    public static AppWidgetManager awm;
-
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction().equals("com.smallcard.WIDGET_TEXT_UPDATE")){
             //接收更新小部件的广播
-            widgetText=intent.getStringExtra("new_widget_text");
-            MainActivity.saveTitlePref(context,EditActivity.widgetId,widgetText);
-            updateAppWidget(context,awm,EditActivity.widgetId);
-            if(views!=null){
-                views.setTextViewText(R.id.text,widgetText);
-            }
-
+            String wt=intent.getStringExtra("new_widget_text");
+            MainActivity.saveTitlePref(context,EditActivity.widgetId,wt);
+            AppWidgetManager manager = AppWidgetManager.getInstance(context);
+            RemoteViews v= new RemoteViews("com.smallcard.android", R.layout.note_widget_transparency);
+            v.setTextViewText(R.id.text,wt);
+            Log.d(TAG, "onReceive: >>>>>>>wt="+wt);
+            manager.updateAppWidget(EditActivity.widgetId,v);
+            updateAppWidget(context,manager,EditActivity.widgetId);
         }else{
             super.onReceive(context, intent);
         }
-
     }
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
@@ -77,10 +75,6 @@ public class NoteWidget extends AppWidgetProvider {
         editor.apply();
 
         EditActivity.widgetId=appWidgetId;
-
-        if(appWidgetManager!=null){
-            awm=appWidgetManager;
-        }
 
         views.setTextViewText(R.id.text,widgetText);
         appWidgetManager.updateAppWidget(appWidgetId, views);
