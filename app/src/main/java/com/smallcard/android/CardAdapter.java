@@ -73,7 +73,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         if(num<16){
             viewHolder.cardView.setCardBackgroundColor(Color.parseColor("#00ffffff"));
         }else{
-            viewHolder.cardView.setCardBackgroundColor(Color.parseColor("#"+prf.getString("card_transparency","ff")+"ffffff"));
+            viewHolder.cardView.setCardBackgroundColor(Color.parseColor("#"+prf.getString("card_transparency","aa")+"ffffff"));
         }
 
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
@@ -99,7 +99,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
             public boolean onLongClick(View v) {
 
                 AlertDialog.Builder dialog=new AlertDialog.Builder(context);
-                dialog.setTitle("删除便签");
+                dialog.setTitle("删除");
                 dialog.setMessage("是否删除此便签？");
                 dialog.setCancelable(true);
                 dialog.setNegativeButton("取消", null);
@@ -157,5 +157,4 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         notifyItemRangeChanged(0,cardList.size());
     }
 
-    }
 }

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetManager;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -22,8 +23,10 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -37,6 +40,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -47,7 +51,6 @@ import android.widget.Toast;
 import org.litepal.LitePal;
 import org.litepal.crud.DataSupport;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,13 +69,15 @@ public class MainActivity extends AppCompatActivity{
 
     private List<Card> list=new ArrayList<>();
 
+    private List<ToDo> list2=new ArrayList<>();
+
     private CardAdapter adapter;
 
-    RecyclerView recyclerView;
+    RecyclerView recyclerView,toDoRecycleView;
 
     String firstLineText,text,date;
 
-    LinearLayout linearLayout;
+    LinearLayout mainLinearLayout;
 
     public static boolean is_widget=false;
 
@@ -104,6 +109,14 @@ public class MainActivity extends AppCompatActivity{
 
     SearchView.SearchAutoComplete searchAutoComplete;
 
+    ViewPager viewPager;
+
+    View toDoListView,noteListView;
+
+    boolean isToDo=false;
+
+    ToDoListAdapter toDoListAdapter;
+
     @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -120,6 +133,14 @@ public class MainActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_main);
 
+        //初始化设置信息的缓存
+        prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
+        editor=prf.edit();
+
+        LitePal.getDatabase();
+
+        initViewPager();
+
         if(is_widget){
             Toast.makeText(this,"请选择要添加到桌面的便签",Toast.LENGTH_SHORT).show();
         }
@@ -129,10 +150,13 @@ public class MainActivity extends AppCompatActivity{
         nav=findViewById(R.id.nav_view);
         add_card=findViewById(R.id.add_card);
         setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
+        final ActionBar actionBar=getSupportActionBar();
         cardView=findViewById(R.id.card_view);
-        recyclerView=findViewById(R.id.recycleView) ;
-        linearLayout=findViewById(R.id.linear_layout);
+        recyclerView=noteListView.findViewById(R.id.recycleView) ;
+        toDoRecycleView=toDoListView.findViewById(R.id.to_do_recycleView);
+        mainLinearLayout=findViewById(R.id.linear_layout);
+
+        recyclerView.setItemAnimator();
 
         final View navHeaderView=nav.getHeaderView(0);
 
@@ -147,10 +171,7 @@ public class MainActivity extends AppCompatActivity{
         translucent=navHeaderView.findViewById(R.id.translucent);
         opaque=navHeaderView.findViewById(R.id.opaque);
 
-
-        //初始化设置信息的缓存
-        prf=getSharedPreferences("com.smallcard.SettingData",MODE_PRIVATE);
-        editor=prf.edit();
+        toDoRecycleView.setLayoutManager(new LinearLayoutManager(this));
 
         //请求权限
         applyWritePermission();
@@ -159,7 +180,7 @@ public class MainActivity extends AppCompatActivity{
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.mipmap.menu);
         }
-        actionBar.setTitle("全部便签");
+        actionBar.setTitle("便签");
 
         if(prf.getString("card_layout","linearlayout").equals("gridlayout")){
             GridLayoutManager layoutManager=new GridLayoutManager(this,2);
@@ -176,16 +197,96 @@ public class MainActivity extends AppCompatActivity{
             linearlayout.setChecked(true);
         }
 
+        //判断当前的View是便签还是待办
+        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int i, float v, int i1) {
+
+            }
+
+            @Override
+            public void onPageSelected(int i) {
+                if(viewPager.getChildAt(i)==toDoListView){
+                    isToDo=true;
+                    searchView.setVisibility(View.GONE);
+                    actionBar.setTitle("待办");
+                }else{
+                    isToDo=false;
+                    searchView.setVisibility(View.VISIBLE);
+                    actionBar.setTitle("便签");
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int i) {
+
+            }
+        });
+
         LoadData();
+        LoadToDo();
 
         add_card.setOnClickListener(new View.OnClickListener() {
 
             @SuppressLint("RestrictedApi")
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(MainActivity.this,EditActivity.class);
-                intent.putExtra("is_edit_widget_text",false);
-                startActivityForResult(intent,1);
+                final List<ToDo> lists=new ArrayList<>();
+
+                if(isToDo){
+
+                    //创建待办事项
+                    AlertDialog.Builder dialog=new AlertDialog.Builder(MainActivity.this);
+
+                    dialog.setTitle("创建待办事项");
+
+                    final View dialogView=getLayoutInflater().inflate(R.layout.dialog_layout,null);
+
+                    dialog.setView(dialogView);
+
+                    final EditText et=dialogView.findViewById(R.id.dialog_edit_text);
+
+                    //点击创建后保存待办事项到ToDoBook表中，再加载出来
+                    dialog.setPositiveButton("创建", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            if(et.length()>0){
+                                String toDoTxt=et.getText().toString();
+
+                                list2.add(new ToDo(toDoTxt,0));
+
+                                ToDoBook toDoBook=new ToDoBook();
+                                toDoBook.setTxt(toDoTxt);
+                                toDoBook.setCheck(0);
+                                toDoBook.save();
+
+                                Log.d("Test", "onClick: todotxt="+toDoTxt);
+
+                                LoadToDo();
+                            }else {
+                                Toast.makeText(MainActivity.this,"未输入文本",Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+                    });
+
+                    dialog.setNegativeButton("取消",null);
+                    et.setFocusable(true);
+                    et.setFocusableInTouchMode(true);
+                    et.requestFocus();
+                    dialog.show();
+
+
+
+                }else{
+                    Intent intent=new Intent(MainActivity.this,EditActivity.class);
+                    intent.putExtra("is_edit_widget_text",false);
+                    startActivityForResult(intent,1);
+                }
+
+                //LoadToDo();
+
             }
         });
 
@@ -233,6 +334,7 @@ public class MainActivity extends AppCompatActivity{
                     adapter=new CardAdapter(list);
                     editor.apply();
                     LoadData();
+                    LoadToDo();
                 }
 
             }
@@ -291,6 +393,17 @@ public class MainActivity extends AppCompatActivity{
         });
     }
 
+    public void initViewPager(){
+        viewPager=findViewById(R.id.view_pager);
+        List<View> viewList=new ArrayList<>();
+        toDoListView=getLayoutInflater().inflate(R.layout.to_do_list_layout,null);
+        noteListView=getLayoutInflater().inflate(R.layout.note_layout,null);
+        viewList.add(noteListView);
+        viewList.add(toDoListView);
+        ViewPagerAdapter toDoListAdapter=new ViewPagerAdapter(viewList);
+        viewPager.setAdapter(toDoListAdapter);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -333,7 +446,7 @@ public class MainActivity extends AppCompatActivity{
                 Card card;
                 List<Card> findList=new ArrayList<>();
                 List<Note> findNote=DataSupport.where("text like ?","%"+newText+"%").find(Note.class);
-                Log.d("Test", "onQueryTextChange: newText="+newText);
+                //Log.d("Test", "onQueryTextChange: newText="+newText);
                 adapter=new CardAdapter(findList);
                 if(findNote.size()>0){
                     for(Note note : findNote){
@@ -451,6 +564,23 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    public void LoadToDo(){
+
+        ToDo toDo;
+        list2.clear();
+        toDoListAdapter=new ToDoListAdapter(list2);
+        List<ToDoBook> toDoBookList=DataSupport.findAll(ToDoBook.class);
+        if(toDoBookList.size()>0){
+            for(ToDoBook tdb : toDoBookList){
+                toDo=new ToDo(tdb.getTxt(),tdb.getCheck());
+                toDoListAdapter.addData(toDo,0);
+            }
+
+            toDoRecycleView.setAdapter(toDoListAdapter);
+        }
+
+    }
+
     //显示卡片
     @SuppressLint("RestrictedApi")
     public void displayCardText() {
@@ -534,7 +664,9 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         if(prf.getString("image_path",null)!=null){
-            linearLayout.setBackground(Drawable.createFromPath(prf.getString("image_path",null)));
+            mainLinearLayout.setBackground(Drawable.createFromPath(prf.getString("image_path",null)));
+        }else{
+            mainLinearLayout.setBackgroundColor(Color.parseColor("#eeeeee"));
         }
         super.onResume();
     }
