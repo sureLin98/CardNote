@@ -24,6 +24,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,13 +60,14 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int i) {
+    public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int i) {
         final Card card=cardList.get(i);
         final int position=i;
         final SharedPreferences prf=context.getSharedPreferences("com.smallcard.SettingData",Context.MODE_PRIVATE);
 
         viewHolder.text.setText(card.text);
         viewHolder.date.setText(card.date);
+        //viewHolder.addToDelete.setVisibility(View.GONE);
 
         Integer num=Integer.valueOf(prf.getString("card_transparency","ff"),16);
 
@@ -111,6 +113,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
                 });
                 dialog.show();
 
+
                 return true;
             }
         });
@@ -131,20 +134,22 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
         RelativeLayout relativeLayout;
 
+        RadioButton addToDelete;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            cardView=(CardView)itemView;
+            cardView=itemView.findViewById(R.id.card_view);
             text=itemView.findViewById(R.id.text);
             date=itemView.findViewById(R.id.date);
             relativeLayout=itemView.findViewById(R.id.date_relative_layout);
+            //addToDelete=itemView.findViewById(R.id.add_to_delete);
         }
     }
 
     public void addData(Card card,int position){
         cardList.add(position,card);
         notifyItemInserted(position);
-        notifyItemRangeChanged(0,cardList.size());
+        notifyItemRangeChanged(position,cardList.size());
 
     }
 
@@ -154,7 +159,9 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
         db.execSQL("delete from Note where text='"+card.text+"'");
         cardList.remove(position);
         notifyItemRemoved(position);
-        notifyItemRangeChanged(0,cardList.size());
+        notifyItemRangeChanged(position,cardList.size());
     }
+
+
 
 }

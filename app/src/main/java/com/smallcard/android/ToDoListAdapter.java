@@ -164,7 +164,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ViewHo
     public void addData(ToDo toDo,int position){
         todoList.add(position,toDo);
         notifyItemInserted(position);
-        notifyItemRangeChanged(0,todoList.size());
+        notifyItemRangeChanged(position,todoList.size());
 
     }
 
@@ -174,7 +174,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ViewHo
         db.execSQL("delete from ToDoBook where txt='"+toDo.getTxt()+"'");
         todoList.remove(position);
         notifyItemRemoved(position);
-        notifyItemRangeChanged(0,todoList.size());
+        notifyItemRangeChanged(position,todoList.size());
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder{

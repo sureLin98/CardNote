@@ -27,6 +27,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.SearchView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -156,7 +157,8 @@ public class MainActivity extends AppCompatActivity{
         toDoRecycleView=toDoListView.findViewById(R.id.to_do_recycleView);
         mainLinearLayout=findViewById(R.id.linear_layout);
 
-        recyclerView.setItemAnimator();
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        toDoRecycleView.setItemAnimator(new DefaultItemAnimator());
 
         final View navHeaderView=nav.getHeaderView(0);
 
@@ -272,12 +274,12 @@ public class MainActivity extends AppCompatActivity{
                     });
 
                     dialog.setNegativeButton("取消",null);
+
+                    dialog.show();
+
                     et.setFocusable(true);
                     et.setFocusableInTouchMode(true);
                     et.requestFocus();
-                    dialog.show();
-
-
 
                 }else{
                     Intent intent=new Intent(MainActivity.this,EditActivity.class);
